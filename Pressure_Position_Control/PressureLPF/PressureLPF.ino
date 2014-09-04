@@ -1,3 +1,6 @@
+#include <i2c_t3.h>
+#include <math.h>
+
 #define GYRO 0x68 //GYRO I2C Address    
 
 #define GYRO_SAMPLERATE_ADDR 0x15 // Address of the divider for the sampling rate
@@ -14,84 +17,117 @@
 #define ACC_WEIGHT_VALID_COUNT 40 // for the this amount of sample, the acceleration vector needs be within the acceptable tolerance for all samples  
 #define ACC_MAG_AVRG_PERIOD 1 // number of samples for averaging the accel magnitude data for accel weight calculation
 
-byte buffer[6];   // Array to store ADC values 
+byte accel_gyro_buffer[6];   // Array to store ADC values 
 
 
 short i;
 
 short gyro_y_w_drift;
 short sample_points;
-
-
-
 double gyro_y;
 double gyro_drift;
 double angle_y;
 double gyro_drift_accum;
 
-IntervalTimer syncTimer;
-int Ts; 
-boolean Tik;
-boolean preTik;
-boolean startRun = false;
-boolean stopRun;
-boolean scopeDebug;
+double ref_signal;
+double error;
+double pre_error;
 
-int valvePin;
+
+IntervalTimer sync_timer;
+int sampling_time; 
+boolean tik;
+boolean pre_tik;
+boolean stop_loop;
+boolean scope_debug;
+
+boolean max_angle_reached;
+boolean inc_duty_cycle; 
+
+int valve_pin;
 double duty_cycle;
 
-byte byteRead; 
+byte byte_read; 
+int number_of_bytes_read;
+char string_read[64];
+byte open_loop_traj[40000];
+int open_loop_traj_size;
+boolean load_led_state;
+int load_led;
 
-double pressureSPAM;
-double pressureSPAM_0;
-double pressureSPAM_1;
-double pressureSPAM_2;
-double pressureSPAM_3;
-double pressureSPAM_4;
+double pressure_spam;
 
-
-double sensorPressure_0;
-double sensorPressure_1;
-double sensorPressure_2;
-double sensorPressure_3;
-double sensorPressure_4;
-
-elapsedMicros stepResponseTimer;
-elapsedMillis initialPause;
+elapsedMicros step_response_timer;
+elapsedMillis initial_pause;
+elapsedMillis data_load_led_timer;
 
 
-#include <i2c_t3.h>
-#include <math.h>
+
 
 void setup()
 {
   Serial.begin(115200); 
+
+  valve_pin = 10;
+  load_led = 13;
+  scope_debug = 8;
   
+  pinMode(valve_pin, OUTPUT);
+  pinMode(load_led, OUTPUT);
+  pinMode(scope_debug,OUTPUT);
+  
+  
+  analogWriteFrequency(valve_pin, 200);
+  analogWriteResolution(12);
+
 
   analogReadResolution(12);
   analogReadAveraging(32);
 
-  valvePin = 10;
-  
-  pinMode(valvePin, OUTPUT);
-  analogWriteFrequency(valvePin, 300);
-  analogWriteResolution(12);
 
-  scopeDebug = 8;
-  pinMode(scopeDebug,OUTPUT);
-  
-  Ts = 1250;// sampling time in microseconds
-  syncTimer.begin(timerCallback1,Ts); 
+  sampling_time = 1250;// sampling time in microseconds
+  sync_timer.begin(timerCallback1,sampling_time); 
 
   delay(1);
   
-  byteRead = 0;
-  while(byteRead != 'G')
+  byte_read = 0;
+  while(byte_read != 'G')
   {   
-    byteRead = Serial.read();
+    byte_read = Serial.read();
   }
   
   
+  data_load_led_timer = 0;
+  number_of_bytes_read = 0;
+  while(string_read[0] != 'T')
+  { 
+    while (!Serial.available()); 
+    Serial.readBytesUntil('y',string_read,10);
+    byte_read = atoi(string_read);
+    open_loop_traj [number_of_bytes_read] = byte_read;
+    number_of_bytes_read++;
+    if (data_load_led_timer > 40)
+    {
+      load_led_state = !load_led_state;
+      digitalWrite(load_led,load_led_state);
+      data_load_led_timer=0;
+    }
+  }
+  digitalWrite(load_led,false);
+  
+  number_of_bytes_read --;
+  open_loop_traj_size = number_of_bytes_read;
+  number_of_bytes_read = 0;
+  
+  Serial.write('T');
+  Serial.write('y');
+  
+  while(byte_read != 'G')
+  {   
+    byte_read = Serial.read();
+  }
+  
+
   Wire.begin(I2C_MASTER, 0x00, I2C_PINS_18_19, I2C_PULLUP_EXT, I2C_RATE_400);
   // Set Gyro settings
 
@@ -103,21 +139,24 @@ void setup()
   
   writeTo(GYRO, GYRO_PWRCTRL_ADDR, GYRO_PWRCTRL_VALUE);
   
-  initialPause = 0;
+  initial_pause = 0;
+  
+  max_angle_reached = false;
+  
 }
 
 void timerCallback1() {
-  Tik = !Tik;
+  tik = !tik;
 }
 
 void loop()
 {
    
-  if(!stopRun)
+  if(!stop_loop)
   {
-    if (Tik != preTik)
+    if (tik != pre_tik)
     {      
-      digitalWrite(scopeDebug,HIGH);
+      digitalWrite(scope_debug,HIGH);
       
       
       Wire.beginTransmission(GYRO);
@@ -129,16 +168,16 @@ void loop()
       i = 0;
       while(Wire.available())
       {
-        buffer[i] = Wire.read();
+        accel_gyro_buffer[i] = Wire.read();
         i++;
       }
       
       
-      if (initialPause <2500)
+      if (initial_pause <2500)
       {
         sample_points ++;
 
-        gyro_y_w_drift = buffer[0] << 8 | buffer[1];
+        gyro_y_w_drift = accel_gyro_buffer[0] << 8 | accel_gyro_buffer[1];
 
         gyro_drift_accum += double(gyro_y_w_drift);
         
@@ -147,77 +186,128 @@ void loop()
         gyro_y = 0;
         angle_y = 0;
         duty_cycle = 0;
-        pressureSPAM = 0;
+        pressure_spam = 0;
       }  
       else
       {
-        gyro_y_w_drift = buffer[0] << 8 | buffer[1]; // Gyro with drift
+        gyro_y_w_drift = accel_gyro_buffer[0] << 8 | accel_gyro_buffer[1]; // Gyro with drift
 
-        gyro_y = double(gyro_y_w_drift) - gyro_drift;
+        gyro_y = (double(gyro_y_w_drift) - gyro_drift);
         
-        angle_y += gyro_y*M_PI/2070000;
+        angle_y += gyro_y*M_PI/2070000; // the resloution, micro s scaled  Ts/14.375*180 multiplied by -1 to follow right hand rule
         
-        int stepValue = 700;
+        unsigned short tmp_short;
+        tmp_short =  open_loop_traj [number_of_bytes_read] << 8 | open_loop_traj [number_of_bytes_read+1];
+        ref_signal = 1.3*double(tmp_short)/100;
+        tmp_short =  open_loop_traj [number_of_bytes_read+2] << 8 | open_loop_traj [number_of_bytes_read+3];
+//        duty_cycle = double(tmp_short);
         
-//        if (stepResponseTimer>2500000)
-//        {
-//          stepResponseTimer = 0;
-//          if (duty_cycle == stepValue)
-//            duty_cycle = 2900;
+        if (number_of_bytes_read > open_loop_traj_size - 5)
+        {
+          number_of_bytes_read = 0;
+        }
+        else
+        {
+          number_of_bytes_read +=4 ;
+        }
+        
+        
+//        Open Loop duty cycle  triangular wave
+//
+//          if (inc_duty_cycle)
+//            duty_cycle = duty_cycle+ 2; 
 //          else
-//            duty_cycle = stepValue;
-//        }
-        duty_cycle = 2000;
-        sensorPressure_4 = sensorPressure_3;
-        sensorPressure_3 = sensorPressure_2;
-        sensorPressure_2 = sensorPressure_1;
-        sensorPressure_1 = sensorPressure_0;
-        sensorPressure_0 =  analogRead(9);
+//            duty_cycle = duty_cycle- 2; 
+//            
+//          if (duty_cycle > 2000)
+//            inc_duty_cycle = false;
+//          else if (duty_cycle < 1000)
+//            inc_duty_cycle = true;
 
-        pressureSPAM = (sensorPressure_0*-0.0315645)+(sensorPressure_1*0.1142015)+(sensorPressure_2*0.8341504)+(sensorPressure_3*0.1142015)+(sensorPressure_4*-0.0315645);
-        pressureSPAM = sensorPressure_0;
+
+
+//        Open Loop duty cycle  square wave
+        
+//        double stepSize = 700;
+//        if (step_response_timer>2500000)
+//        {
+//          step_response_timer = 0;
+//          if (ref_signal == stepSize)
+//            ref_signal = 400;
+//          else
+//            ref_signal = stepSize;
+//        }
+
+
+
+
+
+//    PD Controller 
+      
+      pre_error = error;
+      error = ref_signal - pressure_spam;
+      
+      duty_cycle = (error)*7+(error-pre_error )*1;
+      
+
+//    Speed test
+
+//      if (!max_angle_reached && angle_y < 3.0)
+//      {
+//        duty_cycle = 3000;
+//      }
+//      else
+//      {
+//        max_angle_reached = true;
+//        duty_cycle = 0;
+//      }
+        
+//        duty_cycle = 500;
+        
+        pressure_spam = analogRead(9);;
     }
       
-      analogWrite(valvePin,duty_cycle);  
+      analogWrite(valve_pin,duty_cycle);  
       
       // Outputting Results
       Serial.print(angle_y,7);
       Serial.print(",");
-      Serial.print(gyro_y,7);
+      Serial.print(ref_signal,7);
       Serial.print(",");
-      Serial.print(duty_cycle,1); 
+      Serial.print(duty_cycle,7); 
       Serial.print(",");
-      Serial.print(pressureSPAM,1);
+      Serial.print(pressure_spam,1);
       Serial.println("y");
       Serial.send_now();
       
-      digitalWrite(scopeDebug,LOW);   
-      preTik = Tik;
+      digitalWrite(scope_debug,LOW);   
+      pre_tik = tik;
    }
    
 
    if (Serial.available() > 0)
    {
-        byteRead = Serial.read();
-        if(byteRead=='S')
+        byte_read = Serial.read();
+        if(byte_read=='S')
         {
-          stopRun = true;
+          stop_loop = true;
         }
         
     }
   }
   else if (Serial.available() > 0)
   {
-    byteRead = Serial.read();
-    if(byteRead=='G')
+    byte_read = Serial.read();
+    if(byte_read=='G')
     {
-      stopRun = false;
-      initialPause = 0;
+      stop_loop = false;
+      initial_pause = 0;
+      max_angle_reached = false;
     }
   }
   else
   {
-    analogWrite(valvePin,0); 
+    analogWrite(valve_pin,0); 
   }
 }
 
