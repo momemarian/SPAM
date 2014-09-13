@@ -1,9 +1,13 @@
 %% Create Signals
-init_row = (100*20)+1;
-s = size(OpenLoop_DC_HSB.data(init_row:400*20));
+% init_row = (200*20)+1;
+% s = size(OpenLoop_DC_HSB.data(init_row:400*20)); % Anger & Sad
+init_row = (50*20)+1;
+s = size(OpenLoop_DC_HSB.data(init_row:250*20)); % Joy
+
 byteOut_vector =  zeros ([s(1)*4,1]);   
 DC_MAT = zeros ([1,s(1)+800]);  
-REF_MAT = zeros ([1,s(1)+800]);  
+REF_MAT = zeros ([1,s(1)+800]); 
+
 row =1;
 
 while (row <= s(1))
@@ -58,6 +62,7 @@ clear tmpTime DC_ending row DC_MAT REF_MAT tmp final_diff_ref final_diff_DC s in
 Fs = 800;
 Ts = 1/Fs;
 
+system start_teensy_gateway.bat
 teensyConnection= tcpip('127.0.0.1',28541,'Terminator','y');
 fopen(teensyConnection);
 
@@ -83,6 +88,7 @@ fscanf(teensyConnection,'%cy');
 %Start Teensy Loop
 fwrite(teensyConnection,'G');
 fclose(teensyConnection);
+
 
 clear row s
 

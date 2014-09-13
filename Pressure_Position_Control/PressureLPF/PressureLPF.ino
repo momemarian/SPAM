@@ -26,13 +26,22 @@ short gyro_y_w_drift;
 short sample_points;
 double gyro_y;
 double gyro_drift;
-double angle_y;
+double position_spam;
 double gyro_drift_accum;
 
-double ref_signal;
-double error;
-double pre_error;
 
+double ref_position;
+double error_position;
+double pre_error_position;
+double sum_error_position;
+
+double pressure_spam;
+double ref_pressure;
+double error_pressure;
+double pre_error_pressure;
+double sum_error_pressure;
+
+double Kff;
 
 IntervalTimer sync_timer;
 int sampling_time; 
@@ -55,7 +64,9 @@ int open_loop_traj_size;
 boolean load_led_state;
 int load_led;
 
-double pressure_spam;
+unsigned short tmp_short_press;
+unsigned short tmp_short_pos;
+boolean initial_ramp;
 
 elapsedMicros step_response_timer;
 elapsedMillis initial_pause;
@@ -77,7 +88,7 @@ void setup()
   pinMode(scope_debug,OUTPUT);
   
   
-  analogWriteFrequency(valve_pin, 200);
+  analogWriteFrequency(valve_pin, 300);
   analogWriteResolution(12);
 
 
@@ -184,9 +195,14 @@ void loop()
         gyro_drift = gyro_drift_accum/double(sample_points);
         
         gyro_y = 0;
-        angle_y = 0;
+        position_spam = 0;
         duty_cycle = 0;
         pressure_spam = 0;
+		initial_ramp = true;
+		ref_position = 0;
+		ref_pressure = 0;
+		Kff = 1.2;
+		
       }  
       else
       {
@@ -194,23 +210,43 @@ void loop()
 
         gyro_y = (double(gyro_y_w_drift) - gyro_drift);
         
-        angle_y += gyro_y*M_PI/2070000; // the resloution, micro s scaled  Ts/14.375*180 multiplied by -1 to follow right hand rule
+        position_spam += gyro_y*M_PI/2070000; // the resloution, micro s scaled  Ts/14.375*180 multiplied by -1 to follow right hand rule
         
-        unsigned short tmp_short;
-        tmp_short =  open_loop_traj [number_of_bytes_read] << 8 | open_loop_traj [number_of_bytes_read+1];
-        ref_signal = 1.3*double(tmp_short)/100;
-        tmp_short =  open_loop_traj [number_of_bytes_read+2] << 8 | open_loop_traj [number_of_bytes_read+3];
-//        duty_cycle = double(tmp_short);
+		
+		tmp_short_press =  open_loop_traj [0] << 8 | open_loop_traj [1];
+		tmp_short_pos =  open_loop_traj [2] << 8 | open_loop_traj [3];
+		
+		if (initial_ramp)
+		{
+			if (ref_pressure > Kff*double(tmp_short_press)/100)
+			{
+				initial_ramp = false;
+			}
+			else
+			{
+				ref_pressure += Kff*double(tmp_short_press)/80000;
+				ref_position += double(tmp_short_pos)/8000000;
+			}
+		}
+		else
+		{
+			tmp_short_press =  open_loop_traj [number_of_bytes_read] << 8 | open_loop_traj [number_of_bytes_read+1];
+			ref_pressure = Kff*double(tmp_short_press)/100;
+			//ref_signal = double(tmp_short)/1000 - 7.465;
+		
+			tmp_short_pos =  open_loop_traj [number_of_bytes_read+2] << 8 | open_loop_traj [number_of_bytes_read+3];
+			ref_position = double(tmp_short_pos)/10000;
+	//        duty_cycle = double(tmp_short);
         
-        if (number_of_bytes_read > open_loop_traj_size - 5)
-        {
-          number_of_bytes_read = 0;
-        }
-        else
-        {
-          number_of_bytes_read +=4 ;
-        }
-        
+			if (number_of_bytes_read > open_loop_traj_size - 5)
+			{
+			  number_of_bytes_read = 0;
+			}
+			else
+			{
+			  number_of_bytes_read +=4 ;
+			}
+		}
         
 //        Open Loop duty cycle  triangular wave
 //
@@ -242,17 +278,35 @@ void loop()
 
 
 
-//    PD Controller 
+//    PD Pressure Controller 
       
-      pre_error = error;
-      error = ref_signal - pressure_spam;
-      
-      duty_cycle = (error)*7+(error-pre_error )*1;
-      
+		pre_error_pressure = error_pressure;
+		error_pressure = ref_pressure - pressure_spam;
+		sum_error_pressure += error_pressure;
+	  
+//    PD Position Controller
+
+		pre_error_position = error_position;
+		error_position = ref_position - position_spam;  
+		sum_error_position += error_position;
+	  
+	  
+	//duty_cycle = error_pressure*10+(error_pressure-pre_error_pressure)*0 + error_position*0 + (error_position-pre_error_position)*60000; // Joy with FF 1.4
+	//duty_cycle = error_pressure*9+error_position*0 + (error_position-pre_error_position)*10000; // Anger 
+	duty_cycle = error_pressure*9+error_position*0 + (error_position-pre_error_position)*20000 + sum_error_pressure*0+sum_error_position*3; // Sad 
+	//duty_cycle = 1800;	
+
+//    PD Velocity Controller
+
+		//pre_error = error;
+		//error = ref_signal - gyro_y*M_PI/2587.5;
+//
+		//duty_cycle += (error)*1 +(error-pre_error )*0;
+
 
 //    Speed test
 
-//      if (!max_angle_reached && angle_y < 3.0)
+//      if (!max_angle_reached && position_spam < 3.0)
 //      {
 //        duty_cycle = 3000;
 //      }
@@ -270,13 +324,13 @@ void loop()
       analogWrite(valve_pin,duty_cycle);  
       
       // Outputting Results
-      Serial.print(angle_y,7);
+      Serial.print(position_spam,7);
       Serial.print(",");
-      Serial.print(ref_signal,7);
+      Serial.print(ref_position,7);
       Serial.print(",");
-      Serial.print(duty_cycle,7); 
+      Serial.print(pressure_spam,7); 
       Serial.print(",");
-      Serial.print(pressure_spam,1);
+      Serial.print(ref_pressure,7);
       Serial.println("y");
       Serial.send_now();
       

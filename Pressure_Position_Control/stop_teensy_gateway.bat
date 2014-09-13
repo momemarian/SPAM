@@ -1,0 +1,1 @@
+taskkill /im teensy_gateway.exe

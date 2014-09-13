@@ -54,7 +54,7 @@
             <Value>ARDUINO_MAIN</Value>
             <Value>__AVR__</Value>
             <Value>F_CPU=96000000</Value>
-            <Value>USB_SERIAL</Value>
+            <Value>USB_RAWHID</Value>
             <Value>LAYOUT_US_ENGLISH</Value>
             <Value>__MK20DX256__</Value>
             <Value>TEENSYDUINO=118</Value>
@@ -66,12 +66,12 @@
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\utils</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\avr</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3\utility</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3\utility</Value>
             <Value>C:\Program Files (x86)\Arduino\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\libraries</Value>
             <Value>C:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include</Value>
@@ -92,7 +92,7 @@
             <Value>ARDUINO_MAIN</Value>
             <Value>__AVR__</Value>
             <Value>F_CPU=96000000</Value>
-            <Value>USB_SERIAL</Value>
+            <Value>USB_RAWHID</Value>
             <Value>LAYOUT_US_ENGLISH</Value>
             <Value>__MK20DX256__</Value>
             <Value>TEENSYDUINO=118</Value>
@@ -104,12 +104,12 @@
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\utils</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\avr</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3\utility</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3\utility</Value>
             <Value>C:\Program Files (x86)\Arduino\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\libraries</Value>
             <Value>C:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include</Value>
@@ -313,7 +313,7 @@ build.arch=AVR
             <Value>ARDUINO_MAIN</Value>
             <Value>__AVR__</Value>
             <Value>F_CPU=96000000</Value>
-            <Value>USB_SERIAL</Value>
+            <Value>USB_RAWHID</Value>
             <Value>LAYOUT_US_ENGLISH</Value>
             <Value>__MK20DX256__</Value>
             <Value>TEENSYDUINO=118</Value>
@@ -325,12 +325,12 @@ build.arch=AVR
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\utils</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\avr</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3\utility</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3\utility</Value>
             <Value>C:\Program Files (x86)\Arduino\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\libraries</Value>
             <Value>C:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include</Value>
@@ -351,7 +351,7 @@ build.arch=AVR
             <Value>ARDUINO_MAIN</Value>
             <Value>__AVR__</Value>
             <Value>F_CPU=96000000</Value>
-            <Value>USB_SERIAL</Value>
+            <Value>USB_RAWHID</Value>
             <Value>LAYOUT_US_ENGLISH</Value>
             <Value>__MK20DX256__</Value>
             <Value>TEENSYDUINO=118</Value>
@@ -363,12 +363,12 @@ build.arch=AVR
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\utils</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\cores\teensy3\avr</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries\i2c_t3\utility</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries\i2c_t3\utility</Value>
             <Value>C:\Program Files (x86)\Arduino\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\teensy\libraries</Value>
             <Value>C:\Program Files (x86)\Visual Micro\Visual Micro for Arduino\Micro Platforms\default\debuggers</Value>
-            <Value>C:\Users\m2memarian\Documents\Arduino\libraries</Value>
+            <Value>C:\Users\m2memarian\Google Drive\Grad\Research\AirMuscle\SPAM\libraries</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\arm-none-eabi\include</Value>
             <Value>C:\Program Files (x86)\Arduino\hardware\tools\arm-none-eabi\lib\gcc\arm-none-eabi\4.7.2\include</Value>

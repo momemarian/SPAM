@@ -1,0 +1,27 @@
+s = size(Anger_Index);
+Time = (0:0.011869:(s(1)-1)*0.011869)';
+AngerIndexTimeSeries = [Time Anger_Index];
+
+s = size(Anger_Middle);
+Time = (0:0.011869:(s(1)-1)*0.011869)';
+AngerMiddleTimeSeries = [Time Anger_Middle];
+
+s = size(Anger_Ring);
+Time = (0:0.011869:(s(1)-1)*0.011869)';
+AngerRingTimeSeries = [Time Anger_Ring];
+
+
+s = size(Anger_Index);
+Time = (0:0.011869:(s(1)-1)*0.011869)';
+JoyIndexTimeSeries = [Time Anger_Index];
+
+s = size(Anger_Middle);
+Time = (0:0.011869:(s(1)-1)*0.011869)';
+JoyMiddleTimeSeries = [Time Anger_Middle];
+
+s = size(Anger_Ring);
+Time = (0:0.011869:(s(1)-1)*0.011869)';
+JoyRingTimeSeries = [Time Anger_Ring];
+
+
+clear Time s 
